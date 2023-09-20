@@ -7,6 +7,11 @@
 // Using this solution instead: https://stackoverflow.com/a/72031172/4932261
 #import "CleverTap.h"
 #import "CleverTapReactManager.h"
+#import "CleverTapPushNotificationDelegate.h"
+#import "CleverTapReact.h"
+
+@interface AppDelegate () <CleverTapPushNotificationDelegate> {}
+@end
 
 @implementation AppDelegate
 
@@ -18,7 +23,10 @@
   self.initialProps = @{};
 
   // [CleverTap autoIntegrate]; // integrate CleverTap SDK using the autoIntegrate option
+  
   [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
+  CleverTap *instance = [CleverTap sharedInstance];
+  [instance setPushNotificationDelegate:self];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -28,8 +36,21 @@
       [[CleverTap sharedInstance] setPushToken:deviceToken];
 }
 
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+  NSLog(@"%@", userInfo);
+  
+  [[CleverTap sharedInstance] handleNotificationWithData:userInfo];
+}
+
+
 - (void)pushNotificationTappedWithCustomExtras:(NSDictionary *)customExtras{
-  NSLog(@"pushNotificationTapped: customExtras: ", customExtras);
+  NSLog(@"pushNotificationTapped: customExtras: %@", customExtras);
+  
+  NSMutableDictionary *pushNotificationExtras = [NSMutableDictionary new];
+  if (customExtras != nil) {
+      pushNotificationExtras[@"customExtras"] = customExtras;
+  }
+  [[NSNotificationCenter defaultCenter] postNotificationName:kCleverTapPushNotificationClicked object:nil userInfo:pushNotificationExtras];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
