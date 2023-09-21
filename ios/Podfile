@@ -8,6 +8,8 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+$RNFirebaseAsStaticFramework = true
+
 # If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
 # because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
 #
@@ -24,6 +26,8 @@ if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
   use_frameworks! :linkage => linkage.to_sym
 end
+
+use_frameworks! :linkage => :static
 
 target 'DebugApp' do
   config = use_native_modules!
@@ -57,6 +61,18 @@ target 'DebugApp' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
+
+    installer.pods_project.targets.each do |target|
+      if target.name == "React-Core.common-AccessibilityResources"
+        target.remove_from_project
+      end
+      # https://github.com/CocoaPods/CocoaPods/issues/11402#issuecomment-1201464693
+      if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
+        target.build_configurations.each do |config|
+            config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        end
+      end
+    end
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
 end

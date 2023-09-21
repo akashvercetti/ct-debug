@@ -10,6 +10,8 @@
 #import "CleverTapPushNotificationDelegate.h"
 #import "CleverTapReact.h"
 
+#import <Firebase.h>
+
 @interface AppDelegate () <CleverTapPushNotificationDelegate> {}
 @end
 
@@ -27,6 +29,8 @@
   [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
   CleverTap *instance = [CleverTap sharedInstance];
   [instance setPushNotificationDelegate:self];
+
+  [FIRApp configure]; // integrate Firebase
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
