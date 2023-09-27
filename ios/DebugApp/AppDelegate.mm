@@ -9,7 +9,6 @@
 #import "CleverTapReactManager.h"
 #import "CleverTapPushNotificationDelegate.h"
 #import "CleverTapReact.h"
-
 #import <Firebase.h>
 
 @interface AppDelegate () <CleverTapPushNotificationDelegate> {}
@@ -19,6 +18,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  [FIRApp configure];
+  
   self.moduleName = @"DebugApp";
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
@@ -26,11 +27,11 @@
 
   // [CleverTap autoIntegrate]; // integrate CleverTap SDK using the autoIntegrate option
   
+  
+  
   [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
   CleverTap *instance = [CleverTap sharedInstance];
   [instance setPushNotificationDelegate:self];
-
-  [FIRApp configure]; // integrate Firebase
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -50,6 +51,7 @@
 - (void)pushNotificationTappedWithCustomExtras:(NSDictionary *)customExtras{
   NSLog(@"pushNotificationTapped: customExtras: %@", customExtras);
   
+  // CALL THE REACT NATIVE JAVASCRIPT METHOD for event "CleverTapPushNotificationClicked"
   NSMutableDictionary *pushNotificationExtras = [NSMutableDictionary new];
   if (customExtras != nil) {
       pushNotificationExtras[@"customExtras"] = customExtras;
